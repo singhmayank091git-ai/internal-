@@ -1,0 +1,6 @@
+{
+  "name": "SkillBridge",
+  "description": "Modern dark-themed authentication portal connecting verified skills with boundless opportunity.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
