@@ -23,11 +23,11 @@ export const AuthSuccessModal: React.FC<AuthSuccessModalProps> = ({
   const getRoleIcon = () => {
     switch (role) {
       case 'student':
-        return <GraduationCap className="w-5 h-5 text-blue-400" />;
+        return <GraduationCap className="w-5 h-5 text-emerald-400" />;
       case 'company':
-        return <Building2 className="w-5 h-5 text-indigo-400" />;
+        return <Building2 className="w-5 h-5 text-teal-400" />;
       case 'institution':
-        return <Landmark className="w-5 h-5 text-purple-400" />;
+        return <Landmark className="w-5 h-5 text-cyan-400" />;
     }
   };
 
@@ -50,15 +50,15 @@ export const AuthSuccessModal: React.FC<AuthSuccessModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: 'spring', duration: 0.5, bounce: 0.2 }}
-          className="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-[#0F1423] border border-white/15 shadow-2xl shadow-indigo-950/60 overflow-hidden text-center"
+          className="relative w-full max-w-md p-6 sm:p-8 rounded-3xl bg-[#0F1423] border border-white/15 shadow-2xl shadow-emerald-950/60 overflow-hidden text-center"
           id="auth-success-dialog"
         >
           {/* Ambient Glows */}
-          <div className="absolute -top-12 -left-12 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-purple-500/25 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-12 -left-12 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-cyan-500/25 rounded-full blur-3xl pointer-events-none" />
 
           {/* Success Icon */}
-          <div className="relative mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 p-[1px] shadow-lg shadow-indigo-900/50 mb-5">
+          <div className="relative mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 p-[1px] shadow-lg shadow-emerald-900/50 mb-5">
             <div className="w-full h-full rounded-2xl bg-slate-950/80 backdrop-blur-sm flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-400" />
             </div>
@@ -102,7 +102,7 @@ export const AuthSuccessModal: React.FC<AuthSuccessModalProps> = ({
               type="button"
               id="success-continue-btn"
               onClick={onReset}
-              className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 shadow-lg shadow-indigo-950/50 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 shadow-lg shadow-emerald-950/50 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Explore Dashboard Demo</span>
               <ArrowRight className="w-4 h-4" />

@@ -115,9 +115,9 @@ export const FormPanel: React.FC<FormPanelProps> = ({
         <div className="flex items-center justify-between">
           <SkillBridgeLogo size="md" />
           
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 bg-white/[0.04] px-2.5 py-1 rounded-full border border-white/[0.06]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>Secure TLS 1.3</span>
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-300 bg-white/[0.05] px-3 py-1 rounded-full border border-white/[0.08] shadow-sm backdrop-blur-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-medium">Secure Connection</span>
           </div>
         </div>
 
@@ -134,8 +134,8 @@ export const FormPanel: React.FC<FormPanelProps> = ({
           </motion.h1>
           <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
             {mode === 'login'
-              ? 'Enter your credentials to access your verified talent graph.'
-              : 'Join the next generation platform connecting verified skills.'}
+              ? 'Sign in to manage your profile, explore opportunities, and track applications.'
+              : 'Sign up to start connecting your verified skills with top opportunities.'}
           </p>
         </div>
 
@@ -159,7 +159,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
               {mode === 'login' && (
                 <motion.div
                   layoutId="authTabIndicator"
-                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-purple-600/90 border border-white/20 shadow-md shadow-indigo-950/40"
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600/90 via-teal-600/90 to-cyan-600/90 border border-white/20 shadow-md shadow-emerald-950/40"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -179,7 +179,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
               {mode === 'signup' && (
                 <motion.div
                   layoutId="authTabIndicator"
-                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600/90 via-indigo-600/90 to-purple-600/90 border border-white/20 shadow-md shadow-indigo-950/40"
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600/90 via-teal-600/90 to-cyan-600/90 border border-white/20 shadow-md shadow-emerald-950/40"
                   transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 />
               )}
@@ -207,7 +207,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/20 text-xs font-medium text-slate-200 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-sm"
             >
               {socialLoading === 'Google' ? (
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
               ) : (
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
@@ -239,7 +239,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/20 text-xs font-medium text-slate-200 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-sm"
             >
               {socialLoading === 'GitHub' ? (
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
               ) : (
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
@@ -339,7 +339,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, rememberMe: e.target.checked })
                   }
-                  className="w-3.5 h-3.5 rounded bg-slate-900 border-white/20 text-indigo-600 focus:ring-indigo-500/30 focus:ring-offset-0 accent-indigo-500 cursor-pointer"
+                  className="w-3.5 h-3.5 rounded bg-slate-900 border-white/20 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 accent-emerald-500 cursor-pointer"
                 />
                 <span className="text-slate-300 hover:text-white transition-colors">
                   Remember this device
@@ -353,7 +353,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
                   setForgotPasswordOpen(true);
                   setForgotEmailSent(false);
                 }}
-                className="text-indigo-400 hover:text-indigo-300 transition-colors font-medium cursor-pointer"
+                className="text-emerald-400 hover:text-emerald-300 transition-colors font-medium cursor-pointer"
               >
                 Forgot password?
               </button>
@@ -371,15 +371,15 @@ export const FormPanel: React.FC<FormPanelProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, agreeToTerms: e.target.checked })
                   }
-                  className="w-3.5 h-3.5 mt-0.5 rounded bg-slate-900 border-white/20 text-indigo-600 focus:ring-indigo-500/30 focus:ring-offset-0 accent-indigo-500 cursor-pointer"
+                  className="w-3.5 h-3.5 mt-0.5 rounded bg-slate-900 border-white/20 text-emerald-500 focus:ring-emerald-500/30 focus:ring-offset-0 accent-emerald-500 cursor-pointer"
                 />
                 <span className="text-slate-400 leading-snug">
                   I agree to the{' '}
-                  <span className="text-indigo-400 hover:underline cursor-pointer">
+                  <span className="text-emerald-400 hover:underline cursor-pointer">
                     Terms of Service
                   </span>{' '}
                   and{' '}
-                  <span className="text-indigo-400 hover:underline cursor-pointer">
+                  <span className="text-emerald-400 hover:underline cursor-pointer">
                     Privacy Policy
                   </span>
                   .
@@ -397,10 +397,10 @@ export const FormPanel: React.FC<FormPanelProps> = ({
               type="submit"
               id="continue-button"
               disabled={isLoading}
-              className="relative group w-full py-3 px-5 rounded-xl font-semibold text-sm text-white overflow-hidden shadow-lg shadow-indigo-950/60 hover:shadow-indigo-900/80 transition-all duration-300 active:scale-[0.99] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              className="relative group w-full py-3 px-5 rounded-xl font-semibold text-sm text-white overflow-hidden shadow-lg shadow-emerald-950/60 hover:shadow-emerald-900/80 transition-all duration-300 active:scale-[0.99] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {/* Vibrant subtle gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 group-hover:from-blue-500 group-hover:via-indigo-500 group-hover:to-purple-500 transition-all duration-300" />
+              {/* Vibrant subtle emerald-to-cyan gradient background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 group-hover:from-emerald-400 group-hover:via-teal-400 group-hover:to-cyan-400 transition-all duration-300" />
               
               {/* Shimmer light sweep */}
               <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 ease-in-out pointer-events-none" />
@@ -434,7 +434,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
           type="button"
           id="mode-switch-bottom-btn"
           onClick={() => handleModeSwitch(mode === 'login' ? 'signup' : 'login')}
-          className="text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer transition-colors"
+          className="text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer transition-colors"
         >
           {mode === 'login' ? 'Sign up' : 'Sign in'}
         </button>
@@ -452,7 +452,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
             >
               <h4 className="text-base font-bold text-white">Reset Password</h4>
               <p className="mt-1 text-xs text-slate-300">
-                Enter your account email to receive cryptographic password reset instructions.
+                Enter your account email to receive password reset instructions.
               </p>
 
               {forgotEmailSent ? (
@@ -476,7 +476,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
                   <button
                     type="button"
                     onClick={() => setForgotEmailSent(true)}
-                    className="w-full py-2.5 rounded-xl font-medium text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-colors cursor-pointer"
+                    className="w-full py-2.5 rounded-xl font-medium text-xs text-white bg-emerald-600 hover:bg-emerald-500 transition-colors cursor-pointer"
                   >
                     Send Recovery Link
                   </button>

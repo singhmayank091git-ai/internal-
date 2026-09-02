@@ -52,12 +52,12 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({ selectedRole, onChan
               {isSelected && (
                 <motion.div
                   layoutId="roleActivePill"
-                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-600/80 via-indigo-600/80 to-purple-600/80 border border-white/20 shadow-md shadow-indigo-950/40 backdrop-blur-sm"
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-emerald-600/90 via-teal-600/90 to-cyan-600/90 border border-white/20 shadow-md shadow-emerald-950/40 backdrop-blur-sm"
                   transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                 />
               )}
               <span className="relative z-10 flex items-center gap-1.5">
-                <span className={isSelected ? 'text-indigo-100' : 'text-slate-400'}>
+                <span className={isSelected ? 'text-emerald-100' : 'text-slate-400'}>
                   {getIcon(role.id)}
                 </span>
                 <span className="whitespace-nowrap font-medium">{role.label}</span>
