@@ -277,7 +277,10 @@ export default function App() {
                       )}
                       {activeTab === 'students' && <InstitutionStudentsView />}
                       {activeTab === 'profile' && (
-                        <InstitutionProfileView institutionName={institutionName} />
+                        <InstitutionProfileView
+                          institutionName={institutionName}
+                          onUpdateName={(name) => setInstitutionName(name)}
+                        />
                       )}
                     </>
                   )}
@@ -303,6 +306,7 @@ export default function App() {
                         <ProfileView
                           userRole="company"
                           companyName={companyName}
+                          onUpdateName={(name) => setCompanyName(name)}
                         />
                       )}
                       {activeTab === 'dashboard' && (
@@ -330,6 +334,7 @@ export default function App() {
                         <ProfileView
                           studentName={studentName}
                           userRole="student"
+                          onUpdateName={(name) => setStudentName(name)}
                         />
                       )}
                     </>
