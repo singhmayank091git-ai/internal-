@@ -28,7 +28,7 @@ import { STUDENT_PROFILE_DATA, RECOMMENDED_INTERNSHIPS } from './data/dashboardD
 
 export default function App() {
   // App view state: 'dashboard' or 'auth'
-  const [currentView, setCurrentView] = useState<'dashboard' | 'auth'>('dashboard');
+ const [currentView, setCurrentView] = useState<'dashboard' | 'auth'>('auth');
   const [currentUserRole, setCurrentUserRole] = useState<UserRole>('company'); // Defaulting or toggling between student and company
   const [activeTab, setActiveTab] = useState<DashboardTab>('post-listing');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
