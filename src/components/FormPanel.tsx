@@ -6,6 +6,7 @@ import { SkillBridgeLogo } from './SkillBridgeLogo';
 import { RoleSelector } from './RoleSelector';
 import { GlassInput } from './GlassInput';
 import { PasswordStrengthMeter } from './PasswordStrengthMeter';
+import { supabase } from '../lib/supabaseClient';
 
 interface FormPanelProps {
   mode: AuthMode;
