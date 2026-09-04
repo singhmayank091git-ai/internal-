@@ -38,6 +38,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [forgotEmailSent, setForgotEmailSent] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Sync role changes
   const handleRoleSelect = (role: UserRole) => {
@@ -81,18 +82,84 @@ export const FormPanel: React.FC<FormPanelProps> = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setAuthError(null);
+  if (!validate()) return;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+  setIsLoading(true);
 
-    setIsLoading(true);
-    // Simulate high-speed SaaS auth pipeline
-    setTimeout(() => {
-      setIsLoading(false);
+  // Our database uses 'admin' for institution accounts
+  const dbRole = formData.role === 'institution' ? 'admin' : formData.role;
+
+  try {
+    if (mode === 'signup') {
+      // 1. Create the auth user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signUpError) throw signUpError;
+      if (!authData.user) throw new Error('Signup failed, please try again.');
+
+      // 2. Create their profile row with role + name
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: authData.user.id,
+        role: dbRole,
+        full_name: formData.fullName,
+      });
+
+      if (profileError) throw profileError;
+
+      // 3. Create the role-specific row
+      if (dbRole === 'student') {
+        await supabase.from('student_profiles').insert({ id: authData.user.id });
+      } else if (dbRole === 'company') {
+        await supabase.from('companies').insert({
+          id: authData.user.id,
+          company_name: formData.fullName,
+        });
+      } else if (dbRole === 'admin') {
+        await supabase.from('colleges').insert({
+          name: formData.fullName,
+          admin_id: authData.user.id,
+        });
+      }
+
       onSuccess(formData);
-    }, 900);
-  };
+    } else {
+      // LOGIN
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) throw signInError;
+
+      // Fetch their profile to get real name + role
+      const { data: profile, error: fetchError } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', signInData.user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const uiRole = profile.role === 'admin' ? 'institution' : profile.role;
+
+      onSuccess({
+        ...formData,
+        role: uiRole as UserRole,
+        fullName: profile.full_name || formData.email,
+      });
+    }
+  } catch (err: any) {
+    setAuthError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleSocialAuth = (provider: string) => {
     setSocialLoading(provider);
@@ -203,8 +270,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
             <button
               type="button"
               id="social-google-btn"
-              onClick={() => handleSocialAuth('Google')}
-              disabled={isLoading || !!socialLoading}
+              disabled={true}
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/20 text-xs font-medium text-slate-200 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-sm"
             >
               {socialLoading === 'Google' ? (
@@ -235,8 +301,7 @@ export const FormPanel: React.FC<FormPanelProps> = ({
             <button
               type="button"
               id="social-github-btn"
-              onClick={() => handleSocialAuth('GitHub')}
-              disabled={isLoading || !!socialLoading}
+            disabled={true}
               className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-white/20 text-xs font-medium text-slate-200 transition-all duration-200 disabled:opacity-50 cursor-pointer shadow-sm"
             >
               {socialLoading === 'GitHub' ? (
@@ -264,6 +329,11 @@ export const FormPanel: React.FC<FormPanelProps> = ({
 
         {/* Main Interactive Form */}
         <form onSubmit={handleSubmit} className="space-y-4" id="auth-main-form">
+          {authError && (
+  <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs">
+    {authError}
+  </div>
+)}
           <AnimatePresence mode="popLayout">
             {mode === 'signup' && (
               <motion.div
