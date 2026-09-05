@@ -71,10 +71,6 @@ export const FormPanel: React.FC<FormPanelProps> = ({
       newErrors.password = 'Password must be at least 8 characters';
     }
 
-    if (mode === 'signup' && formData.confirmPassword !== undefined && formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-
     if (mode === 'signup' && !formData.agreeToTerms) {
       newErrors.agreeToTerms = 'You must agree to the Terms of Service';
     }
