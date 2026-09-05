@@ -1,21 +1,103 @@
-import React from 'react';
-import { Clock, Briefcase, Users, CheckCircle2, ArrowRight } from 'lucide-react';
-import { InternshipListing, DashboardTab } from '../types';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { DashboardTab } from '../types';
+
+interface RealPendingListing {
+  id: string;
+  role: string;
+  company: string;
+  companyLogoText: string;
+  location: string;
+  workMode: string;
+  description: string;
+  skills: string[];
+  postedDate: string;
+}
 
 interface InstitutionPendingApprovalsViewProps {
-  listings: InternshipListing[];
-  onApproveListing: (id: string) => void;
-  onRejectListing: (id: string) => void;
   onNavigateTab: (tab: DashboardTab) => void;
 }
 
+function timeAgo(dateString: string): string {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  return `${days} days ago`;
+}
+
 export const InstitutionPendingApprovalsView: React.FC<InstitutionPendingApprovalsViewProps> = ({
-  listings,
-  onApproveListing,
-  onRejectListing,
   onNavigateTab,
 }) => {
-  const pending = listings.filter((l) => l.status === 'Pending Review');
+  const [pending, setPending] = useState<RealPendingListing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchPending();
+  }, []);
+
+  const fetchPending = async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+
+    const { data, error } = await supabase
+      .from('listings')
+      .select('id, title, required_skills, location, work_mode, description, created_at, companies(company_name)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    const mapped: RealPendingListing[] = (data || []).map((row: any) => {
+      const companyName = row.companies?.company_name || 'Unknown Company';
+      return {
+        id: row.id,
+        role: row.title,
+        company: companyName,
+        companyLogoText: companyName.slice(0, 2).toUpperCase(),
+        location: row.location || 'Not specified',
+        workMode: row.work_mode || '',
+        description: row.description || '',
+        skills: row.required_skills || [],
+        postedDate: timeAgo(row.created_at),
+      };
+    });
+
+    setPending(mapped);
+    setIsLoading(false);
+  };
+
+  const handleApprove = async (id: string) => {
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'approved' })
+      .eq('id', id);
+
+    if (error) {
+      setErrorMsg(error.message);
+      return;
+    }
+    setPending((prev) => prev.filter((l) => l.id !== id));
+  };
+
+  const handleReject = async (id: string) => {
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'rejected' })
+      .eq('id', id);
+
+    if (error) {
+      setErrorMsg(error.message);
+      return;
+    }
+    setPending((prev) => prev.filter((l) => l.id !== id));
+  };
 
   return (
     <div className="space-y-6" id="institution-pending-approvals-view">
@@ -30,7 +112,18 @@ export const InstitutionPendingApprovalsView: React.FC<InstitutionPendingApprova
         </div>
       </div>
 
-      {pending.length === 0 ? (
+      {errorMsg && (
+        <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs">
+          {errorMsg}
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm">Loading pending listings...</span>
+        </div>
+      ) : pending.length === 0 ? (
         <div className="py-16 text-center rounded-2xl bg-[#0B0F1E]/80 backdrop-blur-xl border border-white/[0.08] shadow-xl">
           <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3 opacity-90" />
           <h2 className="text-lg font-bold text-white">No Pending Approvals</h2>
@@ -56,7 +149,7 @@ export const InstitutionPendingApprovalsView: React.FC<InstitutionPendingApprova
               <div className="space-y-3 flex-1">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center font-bold text-xs text-white shrink-0">
-                    {listing.companyLogoText || listing.company.slice(0, 2).toUpperCase()}
+                    {listing.companyLogoText}
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-white">{listing.role}</h3>
@@ -66,8 +159,6 @@ export const InstitutionPendingApprovalsView: React.FC<InstitutionPendingApprova
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
                   <span>{listing.location}</span>
-                  <span>•</span>
-                  <span>{listing.type}</span>
                   {listing.workMode && (
                     <>
                       <span>•</span>
@@ -102,14 +193,14 @@ export const InstitutionPendingApprovalsView: React.FC<InstitutionPendingApprova
               <div className="flex items-center gap-2.5 self-end lg:self-center shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-white/[0.06] w-full lg:w-auto justify-end">
                 <button
                   type="button"
-                  onClick={() => onRejectListing(listing.id)}
+                  onClick={() => handleReject(listing.id)}
                   className="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-all cursor-pointer"
                 >
                   Reject
                 </button>
                 <button
                   type="button"
-                  onClick={() => onApproveListing(listing.id)}
+                  onClick={() => handleApprove(listing.id)}
                   className="px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 transition-all shadow-md cursor-pointer"
                 >
                   Approve Listing
