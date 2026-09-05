@@ -244,11 +244,8 @@ export default function App() {
                           onNavigateTab={setActiveTab}
                         />
                       )}
-                      {activeTab === 'pending-approvals' && (
+                                          {activeTab === 'pending-approvals' && (
                         <InstitutionPendingApprovalsView
-                          listings={companyListings}
-                          onApproveListing={handleApproveListing}
-                          onRejectListing={handleRejectListing}
                           onNavigateTab={setActiveTab}
                         />
                       )}
