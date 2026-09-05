@@ -44,7 +44,9 @@ export const BrowseInternshipsView: React.FC = () => {
   const fetchListings = async () => {
     setIsLoading(true);
     setErrorMsg(null);
-
+    
+const { data: userData } = await supabase.auth.getUser();
+    
     const { data, error } = await supabase
       .from('listings')
       .select('id, title, required_skills, location, created_at, companies(company_name)')
@@ -57,6 +59,16 @@ export const BrowseInternshipsView: React.FC = () => {
       return;
     }
 
+  let appliedListingIds = new Set<string>();
+  if (userData.user) {
+    const { data: existingApps } = await supabase
+      .from('applications')
+      .select('listing_id')
+      .eq('student_id', userData.user.id);
+
+    appliedListingIds = new Set((existingApps || []).map((a: any) => a.listing_id));
+  }
+    
     const mapped: RealListing[] = (data || []).map((row: any, idx: number) => {
       const companyName = row.companies?.company_name || 'Unknown Company';
       const initials = companyName
@@ -75,7 +87,7 @@ export const BrowseInternshipsView: React.FC = () => {
         location: row.location || 'Not specified',
         skills: row.required_skills || [],
         postedDate: timeAgo(row.created_at),
-        applied: false,
+        applied: appliedListingIds.has(row.id),
       };
     });
 
