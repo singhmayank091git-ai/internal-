@@ -16,6 +16,7 @@ import {
   Send
 } from 'lucide-react';
 import { CompanyListingForm, RoleType, WorkMode, InternshipListing } from '../types';
+import { supabase } from '../lib/supabaseClient';
 
 interface PostListingViewProps {
   onListingCreated?: (listing: InternshipListing) => void;
@@ -98,37 +99,61 @@ export const PostListingView: React.FC<PostListingViewProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const newListing: InternshipListing = {
-        id: `listing-${Date.now()}`,
-        company: companyName,
-        companyLogoText: companyName.slice(0, 2).toUpperCase(),
-        companyLogoBg: 'from-emerald-600 to-cyan-600',
-        role: formData.roleTitle,
-        location: formData.location,
-        type: formData.roleType === 'Internship' ? 'Summer Internship 2026' : 'Full-time Entry Level',
-        skills: formData.requiredSkills,
-        matchScore: 92,
-        postedDate: 'Just now',
-        workMode: formData.workMode,
-        status: 'Pending Review',
-        applicantCount: 0,
-        description: formData.description,
-      };
-
-      if (onListingCreated) {
-        onListingCreated(newListing);
-      }
-
-      setSubmittedListing(newListing);
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
       setIsSubmitting(false);
-    }, 600);
+      return;
+    }
+
+    const { data: inserted, error } = await supabase
+      .from('listings')
+      .insert({
+        company_id: userData.user.id,
+        title: formData.roleTitle,
+        required_skills: formData.requiredSkills,
+        location: formData.location,
+        work_mode: formData.workMode,
+        description: formData.description,
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      setIsSubmitting(false);
+      alert('Error posting listing: ' + error.message);
+      return;
+    }
+
+    const newListing: InternshipListing = {
+      id: inserted.id,
+      company: companyName,
+      companyLogoText: companyName.slice(0, 2).toUpperCase(),
+      companyLogoBg: 'from-emerald-600 to-cyan-600',
+      role: formData.roleTitle,
+      location: formData.location,
+      type: formData.roleType === 'Internship' ? 'Summer Internship 2026' : 'Full-time Entry Level',
+      skills: formData.requiredSkills,
+      matchScore: 92,
+      postedDate: 'Just now',
+      workMode: formData.workMode,
+      status: 'Pending Review',
+      applicantCount: 0,
+      description: formData.description,
+    };
+
+    if (onListingCreated) {
+      onListingCreated(newListing);
+    }
+
+    setSubmittedListing(newListing);
+    setIsSubmitting(false);
   };
 
   const handleResetForm = () => {
