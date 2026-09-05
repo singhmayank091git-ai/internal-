@@ -389,15 +389,15 @@ export default function App() {
           </motion.div>
 
           {/* Interactive Authentication Feedback Modal */}
-          {successData && (
-            <AuthSuccessModal
-              isOpen={!!successData}
-              mode={authMode}
-              role={selectedRole}
-              data={successData}
-              onContinue={handleAuthModalContinue}
-            />
-          )}
+       {successData && (
+  <AuthSuccessModal
+    isOpen={!!successData}
+    mode={authMode}
+    role={selectedRole}
+    formData={successData}
+    onReset={handleAuthModalContinue}
+  />
+)}
         </main>
       )}
     </div>
