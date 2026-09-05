@@ -181,7 +181,6 @@ export default function App() {
                 ? companyName
                 : studentName
             }
-            onSwitchRole={handleRoleSwitch}
             isMobileOpen={isMobileSidebarOpen}
             onCloseMobile={() => setIsMobileSidebarOpen(false)}
           />
@@ -213,21 +212,6 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleRoleSwitch(
-                      currentUserRole === 'student'
-                        ? 'company'
-                        : currentUserRole === 'company'
-                        ? 'institution'
-                        : 'student'
-                    )
-                  }
-                  className="px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/[0.08] text-[11px] font-semibold text-cyan-300 cursor-pointer"
-                >
-                  Role: {currentUserRole === 'institution' ? 'TPO' : currentUserRole === 'company' ? 'Company' : 'Student'}
-                </button>
                 <button
                   type="button"
                   onClick={handleLogout}
