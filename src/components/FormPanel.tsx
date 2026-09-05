@@ -89,7 +89,6 @@ const handleSubmit = async (e: React.FormEvent) => {
   const dbRole = formData.role === 'institution' ? 'admin' : formData.role;
 
   try {
-    alert('Signup started, mode: ' + mode); 
     if (mode === 'signup') {
       // 1. Create the auth user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -123,7 +122,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           admin_id: authData.user.id,
         });
       }
-      alert('About to call onSuccess');
       onSuccess(formData);
     } else {
       // LOGIN
@@ -152,7 +150,6 @@ const handleSubmit = async (e: React.FormEvent) => {
       });
     }
   } catch (err: any) {
-    alert('ERROR CAUGHT: ' + JSON.stringify(err));
     setAuthError(err.message || 'Something went wrong. Please try again.');
   } finally {
     setIsLoading(false);
