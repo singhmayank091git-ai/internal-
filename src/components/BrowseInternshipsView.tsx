@@ -1,43 +1,92 @@
-import React, { useState } from 'react';
-import { Search, Filter, MapPin, Sparkles, Clock, CheckCircle2, ArrowUpRight } from 'lucide-react';
-import { RECOMMENDED_INTERNSHIPS } from '../data/dashboardData';
-import { InternshipListing } from '../types';
+import React, { useState, useEffect } from 'react';
+import { Search, MapPin, Sparkles, Clock, CheckCircle2, ArrowUpRight, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+
+interface RealListing {
+  id: string;
+  company: string;
+  companyLogoText: string;
+  companyLogoBg: string;
+  role: string;
+  location: string;
+  skills: string[];
+  postedDate: string;
+  applied: boolean;
+}
+
+const LOGO_COLORS = [
+  'from-emerald-600 to-teal-600',
+  'from-cyan-600 to-blue-600',
+  'from-teal-600 to-emerald-600',
+  'from-blue-600 to-cyan-600',
+];
+
+function timeAgo(dateString: string): string {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (days <= 0) return 'Today';
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days} days ago`;
+  return `${Math.floor(days / 7)} week(s) ago`;
+}
 
 export const BrowseInternshipsView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSkill, setSelectedSkill] = useState<string>('All');
-  const [internships, setInternships] = useState<InternshipListing[]>([
-    ...RECOMMENDED_INTERNSHIPS,
-    {
-      id: 'intern-4',
-      company: 'Quantum Dynamics',
-      companyLogoText: 'QD',
-      companyLogoBg: 'from-cyan-600 to-blue-600',
-      role: 'Backend Engineering Intern',
-      location: 'New York, NY / Hybrid',
-      type: 'Full-time Summer 2026',
-      skills: ['Go', 'Docker', 'PostgreSQL'],
-      matchScore: 82,
-      postedDate: '1 week ago',
-    },
-    {
-      id: 'intern-5',
-      company: 'Apex Robotics',
-      companyLogoText: 'AR',
-      companyLogoBg: 'from-teal-600 to-emerald-600',
-      role: 'Machine Learning Research Intern',
-      location: 'Boston, MA / On-site',
-      type: 'Full-time Fall 2026',
-      skills: ['PyTorch', 'Python', 'Computer Vision'],
-      matchScore: 79,
-      postedDate: '4 days ago',
-    },
-  ]);
+  const [internships, setInternships] = useState<RealListing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const fetchListings = async () => {
+    setIsLoading(true);
+    setErrorMsg(null);
+
+    const { data, error } = await supabase
+      .from('listings')
+      .select('id, title, required_skills, location, created_at, companies(company_name)')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      setErrorMsg(error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    const mapped: RealListing[] = (data || []).map((row: any, idx: number) => {
+      const companyName = row.companies?.company_name || 'Unknown Company';
+      const initials = companyName
+        .split(' ')
+        .map((w: string) => w[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase();
+
+      return {
+        id: row.id,
+        company: companyName,
+        companyLogoText: initials,
+        companyLogoBg: LOGO_COLORS[idx % LOGO_COLORS.length],
+        role: row.title,
+        location: row.location || 'Not specified',
+        skills: row.required_skills || [],
+        postedDate: timeAgo(row.created_at),
+        applied: false,
+      };
+    });
+
+    setInternships(mapped);
+    setIsLoading(false);
+  };
 
   const allSkills = ['All', 'React', 'TypeScript', 'Python', 'SQL', 'Node.js', 'Go', 'Docker'];
 
   const filtered = internships.filter((item) => {
-    const matchesSearch = 
+    const matchesSearch =
       item.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.skills.some((s) => s.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -46,7 +95,24 @@ export const BrowseInternshipsView: React.FC = () => {
     return matchesSearch && matchesSkill;
   });
 
-  const handleApply = (id: string) => {
+  const handleApply = async (id: string) => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) {
+      setErrorMsg('You must be logged in to apply.');
+      return;
+    }
+
+    const { error } = await supabase.from('applications').insert({
+      student_id: userData.user.id,
+      listing_id: id,
+      status: 'applied',
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
+      return;
+    }
+
     setInternships((prev) =>
       prev.map((item) => (item.id === id ? { ...item, applied: true } : item))
     );
@@ -65,7 +131,12 @@ export const BrowseInternshipsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Search & Skill Filter Bar */}
+      {errorMsg && (
+        <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs">
+          {errorMsg}
+        </div>
+      )}
+
       <div className="p-4 rounded-2xl bg-[#0B0F1E]/80 backdrop-blur-xl border border-white/[0.08] flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -96,81 +167,87 @@ export const BrowseInternshipsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Internship Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((item) => (
-          <div
-            key={item.id}
-            className="rounded-2xl bg-[#0B0F1E]/80 backdrop-blur-xl border border-white/[0.08] hover:border-cyan-500/40 p-5 shadow-xl flex flex-col justify-between transition-all"
-          >
-            <div>
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.companyLogoBg} flex items-center justify-center font-bold text-sm text-white`}
-                  >
-                    {item.companyLogoText}
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      {item.company}
-                    </h4>
-                    <h3 className="text-sm font-bold text-white leading-snug">{item.role}</h3>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2 my-2.5">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
-                  {item.matchScore}% Match
-                </span>
-                <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-slate-500" />
-                  {item.location}
-                </span>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-white/[0.06]">
-                <div className="text-[11px] text-slate-400 mb-1.5">Required Skills:</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {item.skills.map((skill, sIdx) => (
-                    <span
-                      key={sIdx}
-                      className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] text-slate-300 border border-white/[0.06]"
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16 text-slate-400 gap-2">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm">Loading listings...</span>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16 text-slate-400 text-sm">
+          No listings found. Check back soon.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((item) => (
+            <div
+              key={item.id}
+              className="rounded-2xl bg-[#0B0F1E]/80 backdrop-blur-xl border border-white/[0.08] hover:border-cyan-500/40 p-5 shadow-xl flex flex-col justify-between transition-all"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.companyLogoBg} flex items-center justify-center font-bold text-sm text-white`}
                     >
-                      {skill}
-                    </span>
-                  ))}
+                      {item.companyLogoText}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                        {item.company}
+                      </h4>
+                      <h3 className="text-sm font-bold text-white leading-snug">{item.role}</h3>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 my-2.5">
+                  <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <MapPin className="w-3 h-3 text-slate-500" />
+                    {item.location}
+                  </span>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-white/[0.06]">
+                  <div className="text-[11px] text-slate-400 mb-1.5">Required Skills:</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.skills.map((skill, sIdx) => (
+                      <span
+                        key={sIdx}
+                        className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-white/[0.04] text-slate-300 border border-white/[0.06]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/[0.06]">
-              <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                <Clock className="w-3 h-3 text-slate-500" />
-                {item.postedDate}
-              </span>
-
-              {item.applied ? (
-                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Applied</span>
+              <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/[0.06]">
+                <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-slate-500" />
+                  {item.postedDate}
                 </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => handleApply(item.id)}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
-                >
-                  <span>Apply Now</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </button>
-              )}
+
+                {item.applied ? (
+                  <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Applied</span>
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleApply(item.id)}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
+                  >
+                    <span>Apply Now</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
